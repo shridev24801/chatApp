@@ -190,7 +190,7 @@
             if (status == "delivered") {
                 // Step 1: Select the <i> element with the class 'fas fa-check' inside the '.sentMessage' div
                 var checkIcon = document.querySelector('.sentMessage .fas.fa-check');
-
+console.log(checkIcon);
                 // Step 2: Check if the element exists
                 if (checkIcon) {
                     // Step 3: Remove the existing classes
