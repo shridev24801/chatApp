@@ -272,7 +272,10 @@
                                 <img src="https://img.icons8.com/color/48/000000/circled-user-male-skin-type-7.png" width="30" height="30">
                             </div>`;
                         $("#chat_area").append(send);
-                        changeread("delivered");
+                        if(result.active == 1){
+                            changeread("delivered");
+                        }
+                        
                         
                     }
                 },
@@ -301,6 +304,30 @@
                 }
             });
         }
+
+        function getUserStatus(){
+            var chatId = '{{ $recipient->id ?? "" }}';
+            if(chatId){
+                $.ajax({
+                    method: 'GET',
+                    url: '{{ route("get.user.status", !empty($recipient)?$recipient->id:"") }}',
+                    success: function(response) {
+                        if (response.status === 1) {
+                            // If active, change tick mark to double with color
+                            console.log("came into the function");
+                            changeread("delivered");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            }
+         
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            getUserStatus();
+        });
         $(document).ready(function() {
 
             markMessagesAsRead();
@@ -333,8 +360,10 @@
                 var chatId = '{{ $recipient->id ?? "" }}';
                 // $(".sentMessage .fa-check-double").css("background-color", "blue");
                 markMessagesAsRead(chatId);
-               
+               getUserStatus()
             });
+
+    
         });
     </script>
 

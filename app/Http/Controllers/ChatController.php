@@ -198,13 +198,14 @@ public function markMessagesRead(Request $request)
             $data['read_status'] = 0;
 
             $message = Message::create($data);
-         
+            $user = User::findOrFail($recipient->id);
+            $status = $user->active_status ?? 0;
             // Broadcast the message to the recipient's private channel
             event(new PrivateMessageEvent(Auth::user()->id,$recipient->id, $request->message,0));
             
 
             // Optionally, you can return a response indicating success
-            return response()->json(['status' => 'Message sent']);
+            return response()->json(['status' => 'Message sent','active_status'=> $status]);
         }
 
         public function setActiveStatus(Request $request)
@@ -215,4 +216,15 @@ public function markMessagesRead(Request $request)
                 'status' => $status,
             ], 200);
         }
+
+        public function getUserStatus($id)
+    {
+        // Fetch the user's status
+        $user = User::findOrFail($id);
+        $status = $user->active_status ?? 0; // Default to 0 if status is not set
+
+        return response()->json([
+            'status' => $status,
+        ]);
+    }
 }

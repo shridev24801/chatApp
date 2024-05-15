@@ -41,5 +41,4 @@ Route::middleware('auth')->get('/chat/{recipient?}', [ChatController::class, 'sh
 Route::middleware('auth')->post('/chat/{recipient}', [ChatController::class, 'sendMessage'])->name('send.message');
 Route::post('/mark-messages-read', [ChatController::class, 'markMessagesRead'])->name('mark.messages.read');
 Route::post('/setActiveStatus',[ChatController::class, 'setActiveStatus'])->name('activeStatus.set');
-
-
+Route::get('/get-user-status/{id}', [ChatController::class, 'getUserStatus'])->name('get.user.status');
