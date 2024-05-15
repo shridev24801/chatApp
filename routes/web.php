@@ -40,10 +40,6 @@ require __DIR__.'/auth.php';
 Route::middleware('auth')->get('/chat/{recipient?}', [ChatController::class, 'showChat'])->name('chat');
 Route::middleware('auth')->post('/chat/{recipient}', [ChatController::class, 'sendMessage'])->name('send.message');
 Route::post('/mark-messages-read', [ChatController::class, 'markMessagesRead'])->name('mark.messages.read');
+Route::post('/setActiveStatus',[ChatController::class, 'setActiveStatus'])->name('activeStatus.set');
 
-Route::get('send',function(){
-
-    event(new PrivateMessageEvent(User::find(2), 'Test message'));
-    return 'sent successfully';
-});
 

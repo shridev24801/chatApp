@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Pusher\Pusher;
-use APp\Models\User;
+use App\Models\User;
 use App\Events\PrivateMessageEvent;
 use App\Events\MessageSeenEvent;
 use App\Models\Message;
@@ -205,5 +205,14 @@ public function markMessagesRead(Request $request)
 
             // Optionally, you can return a response indicating success
             return response()->json(['status' => 'Message sent']);
+        }
+
+        public function setActiveStatus(Request $request)
+        {
+            $activeStatus = $request['status'];
+            $status = User::where('id', $request['id'])->update(['active_status' => $activeStatus]);
+            return response()->json([
+                'status' => $status,
+            ], 200);
         }
 }

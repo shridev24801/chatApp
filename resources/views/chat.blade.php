@@ -138,27 +138,40 @@
         const channelName = "private-chat";
         clientSendChannel = pusher.subscribe(`${channelName}.{{ $recipient->id ?? "" }}`);
         clientListenChannel = pusher.subscribe(`${channelName}.{{ auth()->user()->id }}`);
-        // console.log(clientSendChannel);
-        // Subscribe to presence channel
+       
         const presenceChannel = pusher.subscribe('presence-online-users');
-        // console.log(presenceChannel);
-        // Bind to presence events
+        
+
+        // Function to check if a member with a specific ID is online
+        function isMemberOnline(memberId) {
+            const member = presenceChannel.members.get(memberId);
+            // console.log("Member is online",member && member.user_info && member.user_info.online);
+            return member && member.user_info && member.user_info.online;
+        }
+
+        // Event handler for subscription success
         presenceChannel.bind('pusher:subscription_succeeded', (members) => {
-        members.each((member) => {
-            console.log(`${member.id} is online.`);
+            members.each((member) => {
+                setActiveStatus(1,member.id);
+                console.log(`${member.id} is online.`);
+            
+            });
+        });
+
+        // // Event handler for member added
+        // presenceChannel.bind('pusher:member_added', (member) => {
+        //     console.log(`${member.id} is in online.`);
            
-        });
-        });
-
-      
-
-        presenceChannel.bind('pusher:member_added', (member) => {
-
-        console.log(`${member.id} is online.`);
-        });
-
-        presenceChannel.bind('pusher:member_removed', (member) => {
+        //     // Check if your receiver ID is online
+        //     // const receiverId = '{{ $recipient->id ?? "" }}'; // Replace "your_receiver_id" with the ID you want to check
+        //     // if (member.id === receiverId) {
+        //     //     // Call your function with the receiver ID
+        //     //  console.log("you can send");
+        //     // }
+        // });
+      presenceChannel.bind('pusher:member_removed', (member) => {
         console.log(`${member.id} is offline.`);
+        setActiveStatus(0,member.id);
         });
 
         clientListenChannel.bind("message-seen", function(data) {
@@ -190,7 +203,7 @@
             if (status == "delivered") {
                 // Step 1: Select the <i> element with the class 'fas fa-check' inside the '.sentMessage' div
                 var checkIcon = document.querySelector('.sentMessage .fas.fa-check');
-console.log("sabd");
+
                 // Step 2: Check if the element exists
                 if (checkIcon) {
                     // Step 3: Remove the existing classes
@@ -270,6 +283,24 @@ console.log("sabd");
             $('#message-input').val('');
         });
 
+        function setActiveStatus(status,id){
+
+            $.ajax({
+                method: 'POST',
+                url: '{{ route("activeStatus.set") }}',
+                data: {
+                    '_token': '{{ csrf_token() }}',
+                    'status': status,
+                    'id':id
+                },
+                success: function(result) {
+                   console.log("StatusUpadted",result);
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        }
         $(document).ready(function() {
 
             markMessagesAsRead();
@@ -302,6 +333,7 @@ console.log("sabd");
                 var chatId = '{{ $recipient->id ?? "" }}';
                 // $(".sentMessage .fa-check-double").css("background-color", "blue");
                 markMessagesAsRead(chatId);
+               
             });
         });
     </script>
