@@ -29,7 +29,7 @@ To get started with ChatApp, follow these simple steps:
 -   `npm install && npm run dev`
 -   `php artisan storage:link`
 -   `php artisan serve`
--    Register and  the user to login 
+-    Register the user to login and start with the chat
 
 ## Contributing
 
