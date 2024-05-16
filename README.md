@@ -9,7 +9,7 @@
 
 # ChatApp
 
-Welcome to ChatApp! This is a simple chat application built with Node.js and Socket.IO.
+Welcome to ChatApp! This is a simple chat application built with pusher and laravel.
 
 ## Requirements
 
