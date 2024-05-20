@@ -14,360 +14,375 @@
 
 </head>
 
-<body class="bg-gray-200 flex justify-center items-center h-screen">
-    @if (Route::has('login'))
-    <div class="sm:fixed sm:top-0 sm:right-0 p-6 text-right z-10">
-        @auth
-        <a href="{{ url('/dashboard') }}" class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Dashboard</a>
-        <x-dropdown-link :href="route('profile.edit')">
-            {{ __('Profile') }}
-        </x-dropdown-link>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
 
-            <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                {{ __('Log Out') }}
-            </x-dropdown-link>
-        </form>
-        @else
-        <a href="{{ route('login') }}" class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Log in</a>
+<body class="bg-black">
 
-        @if (Route::has('register'))
-        <a href="{{ route('register') }}" class="ml-4 font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Register</a>
-        @endif
-        @endauth
-    </div>
-    @endif
-    <div class="bg-white rounded-lg shadow-md p-4 w-96">
-        <h1 class="text-xl font-semibold mb-4">Chat Lists</h1>
-        <div id="chat-lists" class="mb-4">
+    <div class="flex h-screen">
 
-            @if (!$chatlistUserData->isEmpty())
-            @foreach ($chatlistUserData as $chatlist)
-            <?php $url = 'chat/' . $chatlist->id ?>
-            <p><a href="{{ URL::to($url) }}">{{ $chatlist->name }}</a>
-                @if(isset($unreadMessagesCount[$chatlist->id]) && $unreadMessagesCount[$chatlist->id] > 0)
-
-                <span class="text-xs text-red-500 unread-count" data-chat="{{ $chatlist->id }}">{{ $unreadMessagesCount[$chatlist->id] }}</span>
+        <!-- Chat list -->
+        <div class="w-1/4 bg-black border-r border-gray-600 overflow-y-auto custom_scroll">
+            <!-- List of chats -->
+            <div class="p-4">
+                <h2 class="text-lg font-bold mb-4 text-gray-400">Chat List</h2>
+                <!-- Dynamic chat list items -->
+                @if (!$chatlistUserData->isEmpty())
+                    @foreach ($chatlistUserData as $chatlist)
+                        @php $url = 'chat/' . $chatlist->id;
+                        $last_message = App\Models\Message::latestMessage($chatlist->id );
+                        $message = $last_message->message;
+                        $time = App\Models\Message::lastTime($last_message->created_at);
+                        @endphp
+                        <div class="mb-2">
+                            <div class="flex items-center cursor-pointer p-2 rounded hover:bg-gray-900 chat-lists">
+                                <div class="w-12 h-12 bg-blue-500 rounded-full mr-3 object-fit">
+                                    <img src="{{$chatlist->avatar}}" alt="{{$chatlist->name}}">
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-white">
+                                        <a href="{{ URL::to($url) }}" class="text-white">{{ $chatlist->name }}</a>
+                                    </p>
+                                    <p class="text-white">{{$message}}</p>
+                                </div >
+                                <div class="chat_item">
+                                <p class="text-gray-400">{{$time}}</p>
+                                @if(isset($unreadMessagesCount[$chatlist->id]) && $unreadMessagesCount[$chatlist->id] > 0)
+                                        <p class="text-white rounded-full w-6 h-6 bg-blue-400 notify text-center unread-count" data-chat="{{ $chatlist->id }}">{{ $unreadMessagesCount[$chatlist->id] }}</p>
+                                @endif
+                                
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <h3 class="text-xs font-semibold mb-4 text-gray-400">You Can Chat with Our Users</h3>
+                    @foreach ($getUsers as $user)
+                        @php $url = 'chat/' . $user->id @endphp
+                        <div class="mb-2">
+                            <div class="flex items-center cursor-pointer p-2 rounded hover:bg-gray-900">
+                                <div class="w-12 h-12 bg-blue-500 rounded-full mr-3">
+                                <img src="{{$user->avatar}}" alt="{{$user->name}}">
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-white">
+                                        <a href="{{ URL::to($url) }}" class="text-white">{{ $user->name }}</a>
+                                    </p>
+                                </div >
+                                
+                               
+                            </div>
+                        </div>
+                    @endforeach
                 @endif
-            </p>
-            @endforeach
-            @else
-            <h3 class="text-xs font-semibold mb-4">You Can Chat with Our Users</h3>
-            @foreach ($getUsers as $user)
-            <?php $url = 'chat/' . $user->id ?>
-            <p><a href="{{ URL::to($url) }}">{{ $user->name }}</a></p>
-            @endforeach
-            @endif
+            </div>
+        </div>
+
+        <!-- Chat area -->
+        <div class="w-1/2 bg-gray-800 flex flex-col ">
+            <!-- Chat header -->
+            <div class="border-b border-gray-600 p-4 bg-gray-900">
+                <h2 class="text-lg font-bold text-white">Chat with {{ $recipient->name ?? 'John Doe' }}</h2>
+                <p class="text-sm text-gray-400">Last Seen: 5m ago</p>
+            </div>
+            <!-- Chat messages -->
+            <div class="p-4 flex-1 overflow-y-auto custom_scroll" id="chat_area">
+                <!-- Example message -->
+                    @if((!empty($allMessages)) && isset($allMessages))
+                        @foreach($allMessages as $message)
+                            @if($message->sender == auth()->user()->id)
+                                <div class="flex items-start mb-4 justify-end">
+                                    <div class="inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
+                                        <p class="whitespace-nowrap">{{ $message->message }}</p>
+                                        <div class="tick-mark">
+                                            @if($message->read_status == '0')
+                                                <i class="fas fa-check"></i> <!-- Single tick mark indicating delivered -->
+                                            @elseif ($message->read_status == '1')
+                                                <i class="fas fa-check-double seen"></i> <!-- Double tick mark indicating seen -->
+                                            @endif
+                                        </div>
+                                        <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-full ml-3">
+                                        <img src="{{auth()->user()->avatar}}" alt="{{auth()->user()->name}}">
+                                    </div>
+                                </div>
+                            @else
+                                @if((!empty($recipient)) && isset($recipient))
+                                    <div class="flex items-start mb-4">
+                                        <div class="w-10 h-10 bg-black rounded-full mr-3">
+                                            <img src="{{$recipient->avatar}}" alt="{{$recipient->name}}">
+                                        </div>
+                                        <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative receiver_msg">
+                                            <p class="whitespace-nowrap">{{ $message->message }}</p>
+                                            <div class="absolute left-0 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-black"></div>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endif
+                        @endforeach
+                    @endif
+            </div>
+            <!-- Message input -->
+           
+            <div class="border-t border-gray-600 p-4 w-full target_send">
+                <div class="flex items-center border border-gray-600 rounded p-2">
+                    <input type="text" placeholder="Type your message here..." class="text_message flex-grow p-2" id="message-input">
+                    @if((!empty($recipient)) && isset($recipient))
+                        @php $disable = ""; @endphp
+                        <input type="hidden" id="recipientId" value="{{ $recipient->id }}">
+                    @else
+                        @php $disable = "disabled"; @endphp
+                    @endif
+                    <button class="btn btn-success ml-2" id="send-message" {{ $disable }}><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+                </div>
+            </div>
 
         </div>
 
-    </div>
-    <div class="container d-flex justify-content-center">
-        <div><span>Logged by {{auth()->user()->name}}</span></div>
-        <div class="card mt-5">
-            <div class="d-flex flex-row justify-content-between p-3 adiv text-white">
-                <i class="fas fa-chevron-left"></i>
-                <span class="pb-3">Live chat <?php echo (!empty($recipient) ? "with " . $recipient->name : "") ?></span>
-                <i class="fas fa-times"></i>
-            </div>
-            <div id="chat_area">
-                @if((!empty($allMessages)) && isset($allMessages))
-                @foreach($allMessages as $message)
-                @if($message->sender == auth()->user()->id )
-                <div class="d-flex flex-row p-3">
-
-                    <div class="bg-white mr-2 p-3"><span class="text-muted sendChat">{{$message->message}}
-                        </span> @if($message->read_status == '0')
-                        <i class="fas fa-check"></i> <!-- Double tick mark indicating delivered -->
-                        @elseif ($message->read_status == '1')
-                        <i class="fas fa-check-double seen"></i> <!-- Double tick mark indicating seen -->
-                        @endif
-                    </div>
-                    <img src="https://img.icons8.com/color/48/000000/circled-user-male-skin-type-7.png" width="30" height="30">
-
-
+        <!-- User details -->
+        <div class="w-1/4 bg-black border-l border-gray-600 overflow-y-auto">
+            <!-- User details -->
+            <div class="p-4">
+                <h2 class="text-lg font-bold mb-4 text-gray-400">User Details</h2>
+                <!-- User details content -->
+                <div>
+                    <p class="font-bold text-white">{{ $recipient->name ?? 'John Doe' }}</p>
+                    <p class="text-gray-400">Email: {{ $recipient->email ?? 'johndoe@example.com' }}</p>
+                    <!-- Add more user details here -->
                 </div>
-                @else
-                <div class="d-flex flex-row p-3">
-
-                    <img src="https://img.icons8.com/color/48/000000/circled-user-female-skin-type-7.png" width="30" height="30">
-
-                    <div class="chat ml-2 p-3">{{$message->message}}
-
-                    </div>
-                </div>
-                @endif
-                @endforeach
-                @endif
-
             </div>
-
-            <div class="form-group px-3">
-                <input type="text" class="form-control" id="message-input" placeholder="Type your message" />
-            </div>
-            @if((!empty($recipient)) && isset($recipient))
-            <?php $disable = ""; ?>
-            <input type="hidden" id="recipientId" value="{{$recipient->id}}">
-            @else
-
-            <?php $disable = "disabled"; ?>
-            @endif
-
-            <button class="btn btn-success my-2" id="send-message" {{$disable}}>Send</button>
         </div>
     </div>
 
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <script type="text/javascript" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
 
+<script>
+    Pusher.logToConsole = true;
 
-    <script>
-        Pusher.logToConsole = true;
+    var pusher = new Pusher('8299b0b5e669284d1e9b', {
+        cluster: 'mt1',
+        encrypted: true,
+    });
 
-        var pusher = new Pusher('8299b0b5e669284d1e9b', {
-            cluster: 'mt1',
-            encrypted: true,
-        });
+    var recipientChannel = 'private-chat.{{ auth()->user()->id }}';
+    var channel = pusher.subscribe(recipientChannel);
 
-        var recipientChannel = 'private-chat.{{ auth()->user()->id }}';
-       
-        const channelName = "private-chat";
-        clientSendChannel = pusher.subscribe(`${channelName}.{{ $recipient->id ?? "" }}`);
-        clientListenChannel = pusher.subscribe(`${channelName}.{{ auth()->user()->id }}`);
-       
-        const presenceChannel = pusher.subscribe('presence-online-users');
-        
+    channel.bind('private-message', function(data) {
+        let recipientUserId = data.recipientUserId;
+        let senderId = data.senderId;
+        let recipientId = '{{ $recipient->id ?? "" }}';
 
-        // Function to check if a member with a specific ID is online
-        function isMemberOnline(memberId) {
-            const member = presenceChannel.members.get(memberId);
-            // console.log("Member is online",member && member.user_info && member.user_info.online);
-            return member && member.user_info && member.user_info.online;
+        if (senderId == recipientId) {
+            let receiverMessage = `
+            <div class="flex items-start mb-4">
+                <div class="w-10 h-10 bg-black rounded-full mr-3">
+                <img src="{{ $recipient->avatar ?? "" }}" alt="{{ $recipient->name ?? "" }}">
+                </div>
+                <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
+                    <p class="whitespace-nowrap">${data.message}</p>
+
+                    
+                <div class="absolute left-0 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-black"></div>
+                                    
+            </div>`;
+            $("#chat_area").append(receiverMessage);
         }
 
-        // Event handler for subscription success
-        presenceChannel.bind('pusher:subscription_succeeded', (members) => {
-            members.each((member) => {
-                setActiveStatus(1,member.id);
-                console.log(`${member.id} is online.`);
-            
-            });
-        });
+      
 
-        // // Event handler for member added
-        // presenceChannel.bind('pusher:member_added', (member) => {
-        //     console.log(`${member.id} is in online.`);
-           
-        //     // Check if your receiver ID is online
-        //     // const receiverId = '{{ $recipient->id ?? "" }}'; // Replace "your_receiver_id" with the ID you want to check
-        //     // if (member.id === receiverId) {
-        //     //     // Call your function with the receiver ID
-        //     //  console.log("you can send");
-        //     // }
-        // });
-      presenceChannel.bind('pusher:member_removed', (member) => {
+        var chatId = senderId;
+        var unreadCount = $('.unread-count[data-chat="' + chatId + '"]');
+        if (unreadCount.length) {
+            unreadCount.text(parseInt(unreadCount.text()) + 1);
+        } else {
+            var chatList = $('.chat_item');
+            var unreadSpan = '<p class="text-white rounded-full w-6 h-6 bg-blue-400 notify text-center unread-count" data-chat="' + chatId + '">1</p>';
+            chatList.find('a[href$="' + chatId + '"]').append(unreadSpan);
+        }
+    });
+
+    function updateTickmark(status) {
+        if (status == "sent") {
+            return '<i class="fas fa-check"></i>';
+        } else if (status == "delivered") {
+            return '<i class="fas fa-check-double"></i>';
+        } else {
+            return '<i class="fas fa-check-double seen" style="background-color: lightblue;"></i>';
+        }
+    }
+
+
+    function changeread(status) {
+        if (status == "delivered") {
+            var checkIcon = document.querySelector('.sentMessage .fas.fa-check');
+            if (checkIcon) {
+                checkIcon.classList.remove('fa-check');
+                checkIcon.classList.add('fa-check-double');
+            } else {
+                console.log("Element not found");
+            }
+        }else{
+            var checkIcon = document.querySelector('.sentMessage .fas.fa-check');
+            if (checkIcon) {
+                checkIcon.classList.remove('fa-check');
+                checkIcon.classList.add('fa-check-double seen');
+            } else {
+                console.log("Element not found");
+            }
+        }
+    }
+
+    const channelName = "private-chat";
+    clientSendChannel = pusher.subscribe(`${channelName}.{{ $recipient->id ?? "" }}`);
+    clientListenChannel = pusher.subscribe(`${channelName}.{{ auth()->user()->id }}`);
+
+    $('#send-message').click(function() {
+        var message = $('#message-input').val();
+        $.ajax({
+            method: 'POST',
+            url: '{{ route("send.message", !empty($recipient) ? $recipient->id : "") }}',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'message': message
+            },
+            success: function(result) {
+                var chatId = '{{ $recipient->id ?? "" }}';
+                if (chatId) {
+                    let send = 
+                    `<div class="flex items-start mb-4 justify-end">
+                    <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
+                        <p class="whitespace-nowrap">${message}</p>
+                        <div class="tick-mark">
+                        ${updateTickmark("sent")}
+                        </div>
+                        <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
+                    </div>
+                    <div class="w-10 h-10 rounded-full ml-3">
+                    <img src="{{auth()->user()->avatar ?? ""}}" alt="{{auth()->user()->name ?? ""}}">
+                    </div>
+                </div>`;
+
+                        
+
+                        
+                    $("#chat_area").append(send);
+                    if (result.active_status == 1) {
+                        // $('.fa-check').removeClass('fa-check').addClass('fa-check-double');
+                        changeread("delivered");
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
+            }
+        });
+        $('#message-input').val('');
+    });
+
+    const presenceChannel = pusher.subscribe('presence-online-users');
+
+    function isMemberOnline(memberId) {
+        const member = presenceChannel.members.get(memberId);
+        return member && member.user_info && member.user_info.online;
+    }
+
+    presenceChannel.bind('pusher:subscription_succeeded', (members) => {
+        members.each((member) => {
+            setActiveStatus(1, member.id);
+            console.log(`${member.id} is online.`);
+        });
+    });
+
+    presenceChannel.bind('pusher:member_removed', (member) => {
         console.log(`${member.id} is offline.`);
-        setActiveStatus(0,member.id);
-        });
+        setActiveStatus(0, member.id);
+    });
 
-        clientListenChannel.bind("message-seen", function(data) {
-            if (data.receiverId == '{{ $recipient->id ?? "" }}' && data.senderId == '{{ auth()->user()->id }}') {
-
-                if (data.status == 1) {
-                    console.log(data.status);
-                    $(".sentMessage").find(".fa-check-double").removeClass("fa-check-double").addClass("fa-check-double seen");
-                }
-            }
-
-
-        });
-        var channel = pusher.subscribe(recipientChannel);
-
-
-        function updateTickmark(status) {
-            if (status == "sent") {
-                return '<i class="fas fa-check"></i>';
-            } else if (status == "delivered") {
-                return '<i class="fas fa-check-double"></i>';
-            } else {
-                return '<i class="fas fa-check-double seen" style="background-color: lightblue;"></i>';
+    clientListenChannel.bind("message-seen", function(data) {
+        if (data.receiverId == '{{ $recipient->id ?? "" }}' && data.senderId == '{{ auth()->user()->id }}') {
+            if (data.status == 1) {
+                $(".sentMessage").find(".fa-check-double").removeClass("fa-check-double").addClass("fa-check-double seen");
+                $(".sentMessage").find(".fa-check").removeClass("fa-check").addClass("fa-check-double seen");
             }
         }
+    });
 
-        function changeread(status) {
+   
+   
 
-            if (status == "delivered") {
-                // Step 1: Select the <i> element with the class 'fas fa-check' inside the '.sentMessage' div
-                var checkIcon = document.querySelector('.sentMessage .fas.fa-check');
-
-                // Step 2: Check if the element exists
-                if (checkIcon) {
-                    // Step 3: Remove the existing classes
-                    checkIcon.classList.remove('fa-check');
-
-                    // Step 4: Add the new class
-                    checkIcon.classList.add('fa-check-double');
-                } else {
-                    console.log("Element not found");
-                }
-            }
-
-        }
-        channel.bind('private-message', function(data) {
-            let recipientUserId = data.recipientUserId; // Recipient user ID received from Pusher event
-            let senderId = data.senderId; // Recipient user ID received from Pusher event
-            let recipientId = '{{ $recipient->id ?? "" }}'; // Authenticated user's ID
-
-            let status = data.status === 0 ? "delivered" : "read";
-            // Check if the recipient user ID matches the authenticated user's ID
-            if (senderId == recipientId) {
-
-                let tickMark = updateTickmark(status);
-
-                let tickIcon = '<i class="fas fa-check-double"></i>';
-                let tickStyle = status === "read" ? 'style="background-color: lightblue;"' : '';
-
-
-
-                let receiverMessage = `
-                    <div class="d-flex flex-row p-3">
-                    <img src="https://img.icons8.com/color/48/000000/circled-user-female-skin-type-7.png" width="30" height="30">
-                        <div class="chat ml-2 p-3">${data.message}</div>
-                    </div>`;
-                $("#chat_area").append(receiverMessage);
-
-
-            }
-
-            var chatId = senderId;
-            var unreadCount = $('.unread-count[data-chat="' + chatId + '"]');
-            if (unreadCount.length) {
-                unreadCount.text(parseInt(unreadCount.text()) + 1);
-            } else {
-                var chatList = $('#chat-lists');
-                var unreadSpan = '<span class="text-xs text-red-500 unread-count" data-chat="' + chatId + '">1</span>';
-                chatList.find('a[href$="' + chatId + '"]').append(unreadSpan);
+    function setActiveStatus(status, id) {
+        $.ajax({
+            method: 'POST',
+            url: '{{ route("activeStatus.set") }}',
+            data: {
+                '_token': '{{ csrf_token() }}',
+                'status': status,
+                'id': id
+            },
+            success: function(result) {
+                console.log("StatusUpdated", result);
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
             }
         });
+    }
 
-        $('#send-message').click(function() {
-            var message = $('#message-input').val();
+    function getUserStatus() {
+        var chatId = '{{ $recipient->id ?? "" }}';
+        if (chatId) {
             $.ajax({
-                method: 'POST',
-                url: '{{ route("send.message", !empty($recipient)?$recipient->id:"") }}',
-                data: {
-                    '_token': '{{ csrf_token() }}',
-                    'message': message
-                },
-                success: function(result) {
-                    var chatId = '{{ $recipient->id ?? "" }}';
-                    if (chatId) {
-                        let send = `
-                            <div class="d-flex flex-row p-3">
-                                <div class="bg-white mr-2 p-3 sentMessage"><span class="text-muted sendChat">${message}</span>${updateTickmark("sent")}</div>
-                                <img src="https://img.icons8.com/color/48/000000/circled-user-male-skin-type-7.png" width="30" height="30">
-                            </div>`;
-                        $("#chat_area").append(send);
-                        if(result.active == 1){
-                            changeread("delivered");
-                        }
-                        
-                        
+                method: 'GET',
+                url: '{{ route("get.user.status", !empty($recipient) ? $recipient->id : "") }}',
+                success: function(response) {
+                    if (response.status === 1) {
+                        changeread("delivered");
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error(error);
                 }
             });
-            $('#message-input').val('');
-        });
-
-        function setActiveStatus(status,id){
-
-            $.ajax({
-                method: 'POST',
-                url: '{{ route("activeStatus.set") }}',
-                data: {
-                    '_token': '{{ csrf_token() }}',
-                    'status': status,
-                    'id':id
-                },
-                success: function(result) {
-                   console.log("StatusUpadted",result);
-                },
-                error: function(xhr, status, error) {
-                    console.error(error);
-                }
-            });
         }
+    }
 
-        function getUserStatus(){
+    document.addEventListener('DOMContentLoaded', function() {
+        getUserStatus();
+    });
+
+    $(document).ready(function() {
+        markMessagesAsRead();
+
+        function markMessagesAsRead(chatId) {
             var chatId = '{{ $recipient->id ?? "" }}';
-            if(chatId){
+            if (chatId) {
                 $.ajax({
-                    method: 'GET',
-                    url: '{{ route("get.user.status", !empty($recipient)?$recipient->id:"") }}',
-                    success: function(response) {
-                        if (response.status === 1) {
-                            // If active, change tick mark to double with color
-                            console.log("came into the function");
-                            changeread("delivered");
-                        }
+                    method: 'POST',
+                    url: '{{ route("mark.messages.read") }}',
+                    data: {
+                        '_token': '{{ csrf_token() }}',
+                        'chat_id': chatId
+                    },
+                    success: function(result) {
+                        console.log('Messages marked as read');
+                        changeread('read');
+                        $('.unread-count[data-chat="' + chatId + '"]').remove();
                     },
                     error: function(xhr, status, error) {
                         console.error(error);
                     }
                 });
             }
-         
         }
-        document.addEventListener('DOMContentLoaded', function() {
-            getUserStatus();
+
+        $(document).on('click', '#chat_area', function() {
+            var chatId = '{{ $recipient->id ?? "" }}';
+            markMessagesAsRead(chatId);
         });
-        $(document).ready(function() {
-
-            markMessagesAsRead();
-
-            function markMessagesAsRead(chatId) {
-                var chatId = '{{ $recipient->id ?? "" }}';
-                if (chatId) {
-                    $.ajax({
-                        method: 'POST',
-                        url: '{{ route("mark.messages.read") }}',
-                        data: {
-                            '_token': '{{ csrf_token() }}',
-                            'chat_id': chatId
-                        },
-                        success: function(result) {
-                            console.log('Messages marked as read');
-                            $('.unread-count[data-chat="' + chatId + '"]').remove();
-                            // changeread("read")
-
-
-                        },
-                        error: function(xhr, status, error) {
-                            console.error(error);
-                        }
-                    });
-                }
-            }
-
-            $(document).on('click', '#chat_area', function() {
-                var chatId = '{{ $recipient->id ?? "" }}';
-                // $(".sentMessage .fa-check-double").css("background-color", "blue");
-                markMessagesAsRead(chatId);
-               getUserStatus()
-            });
-
-    
-        });
-    </script>
-
+    });
+</script>
 
 </body>
 
 </html>
+
