@@ -1,43 +1,78 @@
+i.fas.fa-check-double.seen {
+    color:green;
+}
+
+
 .custom_scroll::-webkit-scrollbar {
-    width: 5px;
+  width: 5px;
 }
 
 /* Track */
 .custom_scroll::-webkit-scrollbar-track {
-    box-shadow: inset 0 0 5px grey;
-    border-radius: 10px;
+  box-shadow: inset 0 0 5px grey; 
+  border-radius: 10px;
 }
-
+ 
 /* Handle */
 .custom_scroll::-webkit-scrollbar-thumb {
-    background: blue;
-    border-radius: 10px;
+  background: blue; 
+  border-radius: 10px;
 }
 
 /* Handle on hover */
 .custom_scroll::-webkit-scrollbar-thumb:hover {
-    background: white;
+  background: white; 
 }
 
-i.fas.fa-check-double.seen {
-    color: white
+.target_send {
+    position: relative;
 }
+
+.target_send button {
+  position: absolute;
+  top: 34px;
+  right: 40px;
+}
+.chat_item .notify {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recevier_msg {
+    width: 100px;
+    height: 50px;
+    background-color: #000;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.recevier_msg p {
+    font-size: 18px;
+    line-height: 30px;
+    padding-left: 15px;
+}
+
 
 .send_msg {
-    position: relative;
-    padding-right: 24px; /* Add padding to make space for the tick mark */
+  position: relative;
+  padding-right: 24px; /* Add padding to make space for the tick mark */
 }
 
 .tick-mark {
-    position: absolute;
-    bottom: 4px; /* Adjust as needed */
-    right: 8px; /* Adjust as needed */
+  position: absolute;
+  bottom: 4px; /* Adjust as needed */
+  right: 8px; /* Adjust as needed */
 }
 
 .tick-mark i {
-    font-size: 12px; /* Adjust size as needed */
+  font-size: 12px; /* Adjust size as needed */
 }
 
 .receiver_msg .tick-mark {
-    display: none; /* Hide tick mark for receiver messages */
+  display: none; /* Hide tick mark for receiver messages */
 }
+
+
