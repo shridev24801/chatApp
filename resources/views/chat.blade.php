@@ -332,6 +332,7 @@
 
                     chatArea.find('.last_seen').text('Active');
                 }
+                updateLastSeenText(member.id, 'Active');
 
             });
         });
@@ -339,6 +340,9 @@
         presenceChannel.bind('pusher:member_removed', (member) => {
             console.log(`${member.id} is offline.`);
             setActiveStatus(0, member.id);
+          
+            
+
         });
 
         clientListenChannel.bind("message-seen", function(data) {
@@ -350,7 +354,60 @@
             }
         });
 
+        function updateLastSeenText(userId, status) {
+    var chatHeader = $('.chat_header[data-receiver="' + userId + '"]');
+    if(chatHeader.length) {
+        chatHeader.find('.last_seen').text(status);
+    }
+}
+function fetchAndUpdateLastSeen(userId) {
+    $.ajax({
+        method: 'GET',
+        url: '/get-last-seen/' + userId,
+        success: function(response) {
+            let lastSeen = response.last_seen;
+            updateLastSeenText(userId, lastSeen);
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching last seen:", error);
+        }
+    });
+}
 
+function formatLastSeen(lastSeen) {
+    let lastSeenDate = new Date(lastSeen.replace(' ', 'T') + '+05:30'); // Replace space with 'T' and add offset for IST
+    let now = new Date();
+    let diffInMinutes = Math.floor((now - lastSeenDate) / (1000 * 60));
+
+    if (diffInMinutes < 1) {
+        return 'Last seen just now';
+    } else if (diffInMinutes < 60) {
+        return 'Last seen ' + diffInMinutes + ' minutes ago';
+    } else if (lastSeenDate.toDateString() === now.toDateString()) {
+        return 'Last seen today at ' + lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    } else if (lastSeenDate.toDateString() === new Date(now - 24 * 60 * 60 * 1000).toDateString()) {
+        return 'Last seen yesterday at ' + lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    } else {
+        return 'Last seen on ' + lastSeenDate.toLocaleDateString() + ' at ' + lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+}
+
+
+setInterval(function() {
+    $.ajax({
+        method: 'POST',
+        url: '{{ route("update.last.seen") }}',
+        data: {
+            '_token': '{{ csrf_token() }}'
+        },
+        success: function(result) {
+            console.log("Last seen updated");
+        },
+        error: function(xhr, status, error) {
+            console.error(error);
+        }
+    });
+}, 60000); // Update every minute
 
 
         function setActiveStatus(status, id) {
@@ -391,6 +448,8 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             getUserStatus();
+            fetchAndUpdateLastSeen('{{ $recipient->id ?? "" }}');
+
         });
 
         $(document).ready(function() {

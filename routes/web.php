@@ -42,3 +42,7 @@ Route::middleware('auth')->post('/chat/{recipient}', [ChatController::class, 'se
 Route::post('/mark-messages-read', [ChatController::class, 'markMessagesRead'])->name('mark.messages.read');
 Route::post('/setActiveStatus',[ChatController::class, 'setActiveStatus'])->name('activeStatus.set');
 Route::get('/get-user-status/{id}', [ChatController::class, 'getUserStatus'])->name('get.user.status');
+Route::get('/get-last-seen/{id}', [ChatController::class, 'getLastSeen']);
+Route::post('/update-last-seen', [ChatController::class, 'updateLastSeen'])->name('update.last.seen');
+
+

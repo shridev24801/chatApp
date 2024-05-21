@@ -9,6 +9,7 @@ use App\Events\PrivateMessageEvent;
 use App\Events\MessageSeenEvent;
 use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class ChatController extends Controller
 {
@@ -227,4 +228,27 @@ public function markMessagesRead(Request $request)
             'status' => $status,
         ]);
     }
+
+    public function getLastSeen($id)
+{
+    $user = User::find($id);
+    $formattedLastSeen = Message::timeAgo($user->last_seen);
+    if($user) {
+        return response()->json(['last_seen' => $formattedLastSeen]);
+    } else {
+        return response()->json(['error' => 'User not found'], 404);
+    }
+}
+public function updateLastSeen(Request $request)
+{
+    $user = Auth::user();
+    if ($user) {
+        $user->last_seen = now();
+        $user->save();
+
+        return response()->json(['status' => 'success', 'last_seen' => $user->last_seen]);
+    } else {
+        return response()->json(['status' => 'error', 'message' => 'User not authenticated'], 401);
+    }
+}
 }
