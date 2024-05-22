@@ -39,7 +39,7 @@ i.fas.fa-check-double.seen {
     justify-content: center;
 }
 
-.recevier_msg {
+/* .recevier_msg {
     width: 100px;
     height: 50px;
     background-color: #000;
@@ -47,7 +47,7 @@ i.fas.fa-check-double.seen {
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
+} */
 
 .recevier_msg p {
     font-size: 18px;

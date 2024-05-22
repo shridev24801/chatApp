@@ -11,7 +11,13 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     {{ __("You're logged in!") }}
                 </div>
+              
             </div>
         </div>
+        <div class="max-w-7xl mx-auto p-6 lg:p-8">
+                    <div class="center-link">
+                        <a href="{{ route('chat') }}">Go to Chat Page</a>
+                    </div>
+            </div>
     </div>
 </x-app-layout>

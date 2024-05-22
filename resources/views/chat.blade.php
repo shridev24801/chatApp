@@ -30,12 +30,13 @@
                 @php $url = 'chat/' . $chatlist->id;
                 $last_message = App\Models\Message::latestMessage($chatlist->id );
                 $message = $last_message->message;
+                
                 $time = App\Models\Message::lastTime($last_message->created_at);
                 @endphp
                 <div class="mb-2">
                     <div class="flex items-center cursor-pointer p-2 rounded hover:bg-gray-900 chat-lists">
                         <div class="w-12 h-12 bg-blue-500 rounded-full mr-3 object-fit">
-                            <img src="{{$chatlist->avatar}}" alt="{{$chatlist->name}}">
+                            <img src="{{ asset('storage/' . $chatlist->avatar) }}" alt="{{$chatlist->name}}">
                         </div>
                         <div class="flex-1">
                             <p class="font-bold text-white">
@@ -60,7 +61,7 @@
                 <div class="mb-2">
                     <div class="flex items-center cursor-pointer p-2 rounded hover:bg-gray-900">
                         <div class="w-12 h-12 bg-blue-500 rounded-full mr-3">
-                            <img src="{{$user->avatar}}" alt="{{$user->name}}">
+                            <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{$user->name}}">
                         </div>
                         <div class="flex-1">
                             <p class="font-bold text-white">
@@ -124,14 +125,14 @@
                         <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                     </div>
                     <div class="w-10 h-10 rounded-full ml-3">
-                        <img src="{{auth()->user()->avatar}}" alt="{{auth()->user()->name}}">
+                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{auth()->user()->name}}">
                     </div>
                 </div>
                 @else
                 @if((!empty($recipient)) && isset($recipient))
                 <div class="flex items-start mb-4">
                     <div class="w-10 h-10 bg-black rounded-full mr-3">
-                        <img src="{{$recipient->avatar}}" alt="{{$recipient->name}}">
+                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{$recipient->name}}">
                     </div>
                     <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative receiver_msg">
                         <p class="whitespace-nowrap">{{ $message->message }}</p>
@@ -174,7 +175,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <a href="{{ route('logout') }}" id="logout_trig" class="" onclick="event.preventDefault(); this.closest('form').submit();"><i class="fa fa-sign-out mr-1"></i> Logout</a>
-				</form>
+                </form>
             </div>
         </div>
     </div>
@@ -193,11 +194,27 @@
         var recipientChannel = 'private-chat.{{ auth()->user()->id }}';
         var channel = pusher.subscribe(recipientChannel);
 
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    console.log("Notification permission granted.");
+                }
+            });
+        }
+
+        function showNotification(data) {
+            if (Notification.permission === "granted") {
+                new Notification('New message from ', {
+                    body: data.message
+                });
+            }
+        }
+
         channel.bind('private-message', function(data) {
             let recipientUserId = data.recipientUserId;
             let senderId = data.senderId;
             let recipientId = '{{ $recipient->id ?? "" }}';
-
+            showNotification(data);
             if (senderId == recipientId) {
                 let receiverMessage = `
             <div class="flex items-start mb-4">
@@ -234,7 +251,7 @@
                 chatItem.append(unreadSpan);
             }
             var latestMsg = $('.chat_item[data-chat="' + chatId + '"]').siblings('.flex-1').find('.latest_msg');
-          
+
             latestMsg.text(message);
         });
 
@@ -295,7 +312,7 @@
                         <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                     </div>
                     <div class="w-10 h-10 rounded-full ml-3">
-                    <img src="{{auth()->user()->avatar ?? ""}}" alt="{{auth()->user()->name ?? ""}}">
+                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{auth()->user()->name ?? ""}}">
                     </div>
                 </div>`;
 
@@ -328,7 +345,7 @@
                 setActiveStatus(1, member.id);
                 console.log(`${member.id} is online.`);
                 var chatArea = $('.chat_header[data-receiver="' + member.id + '"]');
-                if(chatArea){
+                if (chatArea) {
 
                     chatArea.find('.last_seen').text('Active');
                 }
@@ -340,8 +357,8 @@
         presenceChannel.bind('pusher:member_removed', (member) => {
             console.log(`${member.id} is offline.`);
             setActiveStatus(0, member.id);
-          
-            
+
+
 
         });
 
@@ -355,59 +372,44 @@
         });
 
         function updateLastSeenText(userId, status) {
-    var chatHeader = $('.chat_header[data-receiver="' + userId + '"]');
-    if(chatHeader.length) {
-        chatHeader.find('.last_seen').text(status);
-    }
-}
-function fetchAndUpdateLastSeen(userId) {
-    $.ajax({
-        method: 'GET',
-        url: '/get-last-seen/' + userId,
-        success: function(response) {
-            let lastSeen = response.last_seen;
-            updateLastSeenText(userId, lastSeen);
-        },
-        error: function(xhr, status, error) {
-            console.error("Error fetching last seen:", error);
+            var chatHeader = $('.chat_header[data-receiver="' + userId + '"]');
+            if (chatHeader.length) {
+                chatHeader.find('.last_seen').text(status);
+            }
         }
-    });
-}
 
-function formatLastSeen(lastSeen) {
-    let lastSeenDate = new Date(lastSeen.replace(' ', 'T') + '+05:30'); // Replace space with 'T' and add offset for IST
-    let now = new Date();
-    let diffInMinutes = Math.floor((now - lastSeenDate) / (1000 * 60));
-
-    if (diffInMinutes < 1) {
-        return 'Last seen just now';
-    } else if (diffInMinutes < 60) {
-        return 'Last seen ' + diffInMinutes + ' minutes ago';
-    } else if (lastSeenDate.toDateString() === now.toDateString()) {
-        return 'Last seen today at ' + lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    } else if (lastSeenDate.toDateString() === new Date(now - 24 * 60 * 60 * 1000).toDateString()) {
-        return 'Last seen yesterday at ' + lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    } else {
-        return 'Last seen on ' + lastSeenDate.toLocaleDateString() + ' at ' + lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    }
-}
-
-
-setInterval(function() {
-    $.ajax({
-        method: 'POST',
-        url: '{{ route("update.last.seen") }}',
-        data: {
-            '_token': '{{ csrf_token() }}'
-        },
-        success: function(result) {
-            console.log("Last seen updated");
-        },
-        error: function(xhr, status, error) {
-            console.error(error);
+        function fetchAndUpdateLastSeen(userId) {
+            $.ajax({
+                method: 'GET',
+                url: '/get-last-seen/' + userId,
+                success: function(response) {
+                    let lastSeen = response.last_seen;
+                    updateLastSeenText(userId, lastSeen);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching last seen:", error);
+                }
+            });
         }
-    });
-}, 60000); // Update every minute
+
+
+
+
+        setInterval(function() {
+            $.ajax({
+                method: 'POST',
+                url: '{{ route("update.last.seen") }}',
+                data: {
+                    '_token': '{{ csrf_token() }}'
+                },
+                success: function(result) {
+                    console.log("Last seen updated");
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        }, 2000); // Update every minute
 
 
         function setActiveStatus(status, id) {

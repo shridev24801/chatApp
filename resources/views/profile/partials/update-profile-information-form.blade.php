@@ -13,7 +13,7 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}"  enctype="multipart/form-data" class="mt-6 space-y-6">
         @csrf
         @method('patch')
 
@@ -43,6 +43,18 @@
                             {{ __('A new verification link has been sent to your email address.') }}
                         </p>
                     @endif
+                </div>
+            @endif
+        </div>
+
+        <div>
+            <x-input-label for="avatar" :value="__('Avatar')" />
+            <input id="avatar" name="avatar" type="file" class="mt-1 block w-full" />
+            <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
+            
+            @if ($user->avatar)
+                <div class="mt-2">
+                    <img src="{{ asset('storage/' . $user->avatar) }}" alt="avatar" class="w-20 h-20 rounded-full">
                 </div>
             @endif
         </div>
