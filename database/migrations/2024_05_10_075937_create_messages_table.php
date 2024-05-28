@@ -16,6 +16,7 @@ return new class extends Migration
             $table->bigInteger('sender')->unsigned();
             $table->bigInteger('receiver')->unsigned();
             $table->text('message');
+            $table->text('attachment');
             $table->boolean('read_status')->default(false);
             $table->timestamps();
         });

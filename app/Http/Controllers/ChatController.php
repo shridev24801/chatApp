@@ -188,9 +188,9 @@ public function markMessagesRead(Request $request)
         {
             // Validate the request
             // dd($recipient,$request);
-            $request->validate([
-                'message' => 'required|string',
-            ]);
+            // $request->validate([
+            //     'message' => 'required|string',
+            // ]);
 
             $data = array();
             $data['sender'] = Auth::user()->id;
@@ -198,15 +198,36 @@ public function markMessagesRead(Request $request)
             $data['message'] = $request->message;
             $data['read_status'] = 0;
 
+            $nameimg = "";
+
+
+            if($request->file('attactment')){
+
+                $file = $request->file('attactment');
+                $mimeType = $file->getMimeType();
+                
+                if (str_starts_with($mimeType, 'image/')) {
+                    $directory = 'chatimage';
+                } elseif (str_starts_with($mimeType, 'video/')) {
+                    $directory = 'chatvideo';
+                } else {
+                    $directory = 'chatfiles';
+                }
+                $filePath = $file->store($directory, 'public');
+                $data['attachment'] = $filePath;
+               
+        
+            }
+
             $message = Message::create($data);
             $user = User::findOrFail($recipient->id);
             $status = $user->active_status ?? 0;
             // Broadcast the message to the recipient's private channel
-            event(new PrivateMessageEvent(Auth::user()->id,$recipient->id, $request->message,0));
+            event(new PrivateMessageEvent(Auth::user()->id,$recipient->id, $request->message,0,$filePath));
             
 
             // Optionally, you can return a response indicating success
-            return response()->json(['status' => 'Message sent','active_status'=> $status]);
+            return response()->json(['status' => 'Message sent','active_status'=> $status,'attachment'=> $filePath]);
         }
 
         public function setActiveStatus(Request $request)

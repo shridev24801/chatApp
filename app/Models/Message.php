@@ -11,7 +11,7 @@ class Message extends Model
 {
     use HasFactory;
 
-    protected $fillable  = ['sender','receiver', 'message','read_status'];
+    protected $fillable  = ['sender','receiver', 'message','read_status','attachment'];
 
     public static function latestMessage($id)
     {

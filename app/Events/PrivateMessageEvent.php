@@ -21,13 +21,15 @@ class PrivateMessageEvent implements ShouldBroadcast
     public $recipientUserId;
     public $message;
     public $status;
+    public $attachment;
 
-    public function __construct($senderId,$recipientUserId, $message,$status)
+    public function __construct($senderId,$recipientUserId, $message,$status,$attachment)
     {
         $this->recipientUserId = $recipientUserId;
         $this->message = $message;
         $this->senderId = $senderId;
         $this->status = $status;
+        $this->attachment = $attachment;
     }
 
     /**

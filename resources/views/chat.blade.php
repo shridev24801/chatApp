@@ -148,14 +148,17 @@
 
             <div class="border-t border-gray-600 p-4 w-full target_send">
                 <div class="flex items-center border border-gray-600 rounded p-2">
-                    <input type="text" placeholder="Type your message here..." class="text_message flex-grow p-2" id="message-input">
+                <form id="fupForm" enctype="multipart/form-data">
+                    <input type="text" placeholder="Type your message here..." class="text_message flex-grow p-2" name="message" id="message-input">
                     @if((!empty($recipient)) && isset($recipient))
                     @php $disable = ""; @endphp
                     <input type="hidden" id="recipientId" value="{{ $recipient->id }}">
                     @else
                     @php $disable = "disabled"; @endphp
                     @endif
-                    <button class="btn btn-success ml-2" id="send-message" {{ $disable }}><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+                    <input type="file" class="form-control attachment" id="file" name="attactment"  />
+                <button type="submit" name="submit" class="btn btn-success ml-2" id="send-message" {{ $disable }}><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+            </form>
                 </div>
             </div>
 
@@ -205,7 +208,7 @@
         function showNotification(data) {
             if (Notification.permission === "granted") {
                 new Notification('New message from ', {
-                    body: data.message
+                    body: data
                 });
             }
         }
@@ -214,22 +217,77 @@
             let recipientUserId = data.recipientUserId;
             let senderId = data.senderId;
             let recipientId = '{{ $recipient->id ?? "" }}';
-            showNotification(data);
+            
+            let attachment  = data.attachment;
             if (senderId == recipientId) {
-                let receiverMessage = `
-            <div class="flex items-start mb-4">
-                <div class="w-10 h-10 bg-black rounded-full mr-3">
-                <img src="{{ $recipient->avatar ?? "" }}" alt="{{ $recipient->name ?? "" }}">
-                </div>
-                <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
-                    <p class="whitespace-nowrap">${data.message}</p>
+        if (data.message && data.message.length > 0) {
+            showNotification(data.message);
+            var url = '{{ URL::to("/storage/") }}';
+            let receiverMessage = `
+                <div class="flex items-start mb-4">
+                    <div class="w-10 h-10 bg-black rounded-full mr-3">
+                        <img src="{{ asset('storage/'.$recipient->avatar ?? '') }}" alt="{{ $recipient->name ?? '' }}">
+                    </div>
+                    <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
+                        <p class="whitespace-nowrap">${data.message}</p>
+                        <div class="absolute left-0 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-black"></div>
+                    </div>
+                </div>`;
+            $("#chat_area").append(receiverMessage);
+        }
 
-                    
-                <div class="absolute left-0 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-black"></div>
-                                    
-            </div>`;
-                $("#chat_area").append(receiverMessage);
+        if (attachment) {
+            var url = '{{ URL::to("/storage") }}';
+            var attachmentPath = attachment;
+            var directory = attachmentPath.split('/')[0];
+            var receiverMessage;
+
+           
+            if (directory === 'chatimage') {
+                showNotification("Sent you a Image");
+                receiverMessage = `
+                    <div class="flex items-start mb-4">
+                        <div class="w-10 h-10 bg-black rounded-full mr-3">
+                        <img src="{{ asset('storage/'.$recipient->avatar ?? '') }}" alt="{{ $recipient->name ?? '' }}">
+                        </div>
+                        <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
+                            <img src="${url}/${attachmentPath}" alt="chatImage" width="100px" height="100px">
+                            <div class="absolute left-0 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-black"></div>
+                        </div>
+                    </div>`;
+            } else if (directory === 'chatvideo') {
+                showNotification("Sent you a Vedio");
+                receiverMessage = `
+                    <div class="flex items-start mb-4">
+                        <div class="w-10 h-10 bg-black rounded-full mr-3">
+                        <img src="{{ asset('storage/'.$recipient->avatar ?? '') }}" alt="{{ $recipient->name ?? '' }}">
+                        </div>
+                        <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
+                            <video width="320" height="240" controls>
+                                <source src="${url}/${attachmentPath}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <div class="absolute left-0 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-black"></div>
+                        </div>
+                    </div>`;
+            } else if (directory === 'chatfiles') {
+                showNotification("Shared you a file");
+                var fileName = attachmentPath.split('/').pop();
+                receiverMessage = `
+                    <div class="flex items-start mb-4">
+                        <div class="w-10 h-10 bg-black rounded-full mr-3">
+                        <img src="{{ asset('storage/'.$recipient->avatar ?? '') }}" alt="{{ $recipient->name ?? '' }}">
+                        </div>
+                        <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
+                            <a href="${url}/${attachmentPath}" download="${fileName}" class="text-white underline">${fileName}</a>
+                            <div class="absolute left-0 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-black"></div>
+                        </div>
+                    </div>`;
             }
+
+            $("#chat_area").append(receiverMessage);
+        }
+    }
 
 
 
@@ -290,48 +348,48 @@
         clientSendChannel = pusher.subscribe(`${channelName}.{{ $recipient->id ?? "" }}`);
         clientListenChannel = pusher.subscribe(`${channelName}.{{ auth()->user()->id }}`);
 
-        $('#send-message').click(function() {
-            var message = $('#message-input').val();
-            $.ajax({
-                method: 'POST',
-                url: '{{ route("send.message", !empty($recipient) ? $recipient->id : "") }}',
-                data: {
-                    '_token': '{{ csrf_token() }}',
-                    'message': message
-                },
-                success: function(result) {
-                    var chatId = '{{ $recipient->id ?? "" }}';
-                    if (chatId) {
-                        let send =
-                            `<div class="flex items-start mb-4 justify-end">
-                    <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
-                        <p class="whitespace-nowrap">${message}</p>
-                        <div class="tick-mark">
-                        ${updateTickmark("sent")}
-                        </div>
-                        <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
-                    </div>
-                    <div class="w-10 h-10 rounded-full ml-3">
-                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{auth()->user()->name ?? ""}}">
-                    </div>
-                </div>`;
+        // $('#send-message').click(function() {
+        //     var message = $('#message-input').val();
+        //     $.ajax({
+        //         method: 'POST',
+        //         url: '{{ route("send.message", !empty($recipient) ? $recipient->id : "") }}',
+        //         data: {
+        //             '_token': '{{ csrf_token() }}',
+        //             'message': message
+        //         },
+        //         success: function(result) {
+        //             var chatId = '{{ $recipient->id ?? "" }}';
+        //             if (chatId) {
+        //                 let send =
+        //                     `<div class="flex items-start mb-4 justify-end">
+        //             <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
+        //                 <p class="whitespace-nowrap">${message}</p>
+        //                 <div class="tick-mark">
+        //                 ${updateTickmark("sent")}
+        //                 </div>
+        //                 <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
+        //             </div>
+        //             <div class="w-10 h-10 rounded-full ml-3">
+        //             <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{auth()->user()->name ?? ""}}">
+        //             </div>
+        //         </div>`;
 
 
 
 
-                        $("#chat_area").append(send);
-                        if (result.active_status == 1) {
-                            // $('.fa-check').removeClass('fa-check').addClass('fa-check-double');
-                            changeread("delivered");
-                        }
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error(error);
-                }
-            });
-            $('#message-input').val('');
-        });
+        //                 $("#chat_area").append(send);
+        //                 if (result.active_status == 1) {
+        //                     // $('.fa-check').removeClass('fa-check').addClass('fa-check-double');
+        //                     changeread("delivered");
+        //                 }
+        //             }
+        //         },
+        //         error: function(xhr, status, error) {
+        //             console.error(error);
+        //         }
+        //     });
+        //     $('#message-input').val('');
+        // });
 
         const presenceChannel = pusher.subscribe('presence-online-users');
 
@@ -484,6 +542,115 @@
                 markMessagesAsRead(chatId);
             });
         });
+
+          // Submit form data via Ajax
+    $("#fupForm").on('submit', function(e){
+        e.preventDefault();
+        let hasFile = !!$(".attachment").val();
+
+        console.log(hasFile);
+        var message = $('#message-input').val();
+        if(message.length > 0 || hasFile){
+            $.ajax({
+                type: 'POST',
+                url: '{{ route("send.message", !empty($recipient) ? $recipient->id : "") }}',
+                data: new FormData(this),
+                dataType: 'json',
+                contentType: false,
+                cache: false,
+                processData:false,
+                success: function(result) {
+            var chatId = '{{ $recipient->id ?? "" }}';
+            if (chatId) {
+                if(message.length > 0){
+                    let send =
+                    `<div class="flex items-start mb-4 justify-end">
+                        <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
+                            <p class="whitespace-nowrap">${message}</p>
+                            <div class="tick-mark">
+                            ${updateTickmark("sent")}
+                            </div>
+                            <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
+                        </div>
+                        <div class="w-10 h-10 rounded-full ml-3">
+                        <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{auth()->user()->name ?? ""}}">
+                        </div>
+                    </div>`;
+            $("#chat_area").append(send);
+                }
+                if (result.attachment.length > 0) {
+                    var url = '{{ URL::to("/storage") }}';
+                    var attachmentPath = result.attachment;
+                    var directory = attachmentPath.split('/')[0];
+                    var sendAttachment;
+                    if (directory === 'chatimage') {
+                        sendAttachment = `
+                            <div class="flex items-start mb-4 justify-end">
+                                <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
+                                    <img src="${url}/${attachmentPath}" alt="chatImage" width="100px" height="100px">
+                                    <div class="tick-mark">
+                                        ${updateTickmark("sent")}
+                                    </div>
+                                    <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
+                                </div>
+                                <div class="w-10 h-10 rounded-full ml-3">
+                                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}">
+                                </div>
+                            </div>`;
+                    } else if (directory === 'chatvideo') {
+                        sendAttachment = `
+                            <div class="flex items-start mb-4 justify-end">
+                                <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
+                                    <video width="320" height="240" controls>
+                                        <source src="${url}/${attachmentPath}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <div class="tick-mark">
+                                        ${updateTickmark("sent")}
+                                    </div>
+                                    <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
+                                </div>
+                                <div class="w-10 h-10 rounded-full ml-3">
+                                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}">
+                                </div>
+                            </div>`;
+                    } else if (directory === 'chatfiles') {
+                        var fileName = attachmentPath.split('/').pop();
+                        sendAttachment = `
+                            <div class="flex items-start mb-4 justify-end">
+                                <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
+                                    <a href="${url}/${attachmentPath}" download="${fileName}" class="text-white underline">${fileName}</a>
+                                    <div class="tick-mark">
+                                        ${updateTickmark("sent")}
+                                    </div>
+                                    <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
+                                </div>
+                                <div class="w-10 h-10 rounded-full ml-3">
+                                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}">
+                                </div>
+                            </div>`;
+                    }
+
+                    $("#chat_area").append(sendAttachment);
+                    }
+
+              
+                if (result.active_status == 1) {
+                    // $('.fa-check').removeClass('fa-check').addClass('fa-check-double');
+                    changeread("delivered");
+                }
+            }
+
+        },
+        error: function(xhr, status, error) {
+            console.error(error);
+        }
+            });
+        }
+        $('.attachment').val('');
+        $('#message-input').val('');
+    });
+
     </script>
 
 </body>
