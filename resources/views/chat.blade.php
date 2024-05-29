@@ -76,7 +76,6 @@
                 @endif
             </div>
         </div>
-
         <!-- Chat area -->
         <div class="w-1/2 bg-gray-800 flex flex-col chatting">
             <!-- Chat header -->
