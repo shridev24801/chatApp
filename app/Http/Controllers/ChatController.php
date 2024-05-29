@@ -198,7 +198,7 @@ public function markMessagesRead(Request $request)
             $data['message'] = $request->message;
             $data['read_status'] = 0;
 
-            $nameimg = "";
+            $filePath = "";
 
 
             if($request->file('attactment')){
