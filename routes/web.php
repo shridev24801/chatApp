@@ -44,5 +44,7 @@ Route::post('/setActiveStatus',[ChatController::class, 'setActiveStatus'])->name
 Route::get('/get-user-status/{id}', [ChatController::class, 'getUserStatus'])->name('get.user.status');
 Route::get('/get-last-seen/{id}', [ChatController::class, 'getLastSeen']);
 Route::post('/update-last-seen', [ChatController::class, 'updateLastSeen'])->name('update.last.seen');
+Route::post('/delete-message/{id}', [ChatController::class, 'deleteMessage']);
+
 
 

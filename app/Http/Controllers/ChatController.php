@@ -10,6 +10,8 @@ use App\Events\MessageSeenEvent;
 use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+
 
 class ChatController extends Controller
 {
@@ -191,7 +193,7 @@ public function markMessagesRead(Request $request)
             // $request->validate([
             //     'message' => 'required|string',
             // ]);
-
+            
             $data = array();
             $data['sender'] = Auth::user()->id;
             $data['receiver'] = $recipient->id;
@@ -215,19 +217,26 @@ public function markMessagesRead(Request $request)
                 }
                 $filePath = $file->store($directory, 'public');
                 $data['attachment'] = $filePath;
-               
-        
+            
+
+            }
+            if ($request->file('audio')) {
+            
+                $file = $request->file('audio');
+                $filePath = $file->storeAs('chataudio', 'recording-' . time() . '.mp3', 'public'); // Store with .mp3 extension
+
+                $data['attachment'] = $filePath;
             }
 
             $message = Message::create($data);
             $user = User::findOrFail($recipient->id);
             $status = $user->active_status ?? 0;
-            // Broadcast the message to the recipient's private channel
-            event(new PrivateMessageEvent(Auth::user()->id,$recipient->id, $request->message,0,$filePath));
+        // Broadcast the message to the recipient's private channel
+        event(new PrivateMessageEvent(Auth::user()->id,$recipient->id, $request->message,0,$filePath));
             
 
-            // Optionally, you can return a response indicating success
-            return response()->json(['status' => 'Message sent','active_status'=> $status,'attachment'=> $filePath]);
+        // Optionally, you can return a response indicating success
+        return response()->json(['status' => 'Message sent','active_status'=> $status,'attachment'=> $filePath]);
         }
 
         public function setActiveStatus(Request $request)
@@ -272,4 +281,25 @@ public function updateLastSeen(Request $request)
         return response()->json(['status' => 'error', 'message' => 'User not authenticated'], 401);
     }
 }
+public function deleteMessage($id)
+{
+    
+    $message = Message::find($id);
+
+    if ($message && $message->sender == auth()->user()->id) {
+        // Check if the message has an attachment
+        if ($message->attachment) {
+            // Delete the file from the storage
+            Storage::delete($message->attachment);
+        }
+
+        // Delete the message from the database
+        $message->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    return response()->json(['success' => false], 403);
 }
+}
+
