@@ -10,8 +10,14 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
     <link href="{{URL::to('/css/chat.css')}}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/emoji-button/dist/emoji-button.css"/>
+    <script src="https://unpkg.com/emoji-button"></script>
+
+
+
+
+    
 
 </head>
 
@@ -301,29 +307,30 @@
             <!-- Message input -->
 
             <div class="border-t border-gray-600 p-4 w-full target_send">
-                <div class="flex items-center border border-gray-600 rounded p-2">
-                    <form id="fupForm" enctype="multipart/form-data">
-                        <input type="text" placeholder="Type your message here..." class="text_message flex-grow p-2" name="message" id="message-input">
-                        @if((!empty($recipient)) && isset($recipient))
-                        @php $disable = ""; @endphp
-                        <input type="hidden" id="recipientId" value="{{ $recipient->id }}">
-                        @else
-                        @php $disable = "disabled"; @endphp
-                        @endif
-                        <label class="attachment">
-                            <i class="fas fa-image"></i>
-                            <input type="file" class="form-control attachment" id="file" name="attactment" />
-                        </label>
-                        <div class="mic-container">
-                                <div class="circle">
-                                    <i class="fas fa-microphone"></i>
-                                    
-                                </div>
-                            </div>
-                       <button type="submit" name="submit" class="btn btn-success ml-2" id="send-message" {{ $disable }}><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
-                    </form>
+    <div class="flex items-center border border-gray-600 rounded p-2">
+        <form id="fupForm" enctype="multipart/form-data">
+            <input type="text" placeholder="Type your message here..." class="text_message flex-grow p-2" name="message" id="message-input">
+            @if((!empty($recipient)) && isset($recipient))
+            @php $disable = ""; @endphp
+            <input type="hidden" id="recipientId" value="{{ $recipient->id }}">
+            @else
+            @php $disable = "disabled"; @endphp
+            @endif
+            <label class="attachment">
+                <i class="fas fa-image"></i>
+                <input type="file" class="form-control attachment" id="file" name="attactment" />
+            </label>
+            <div class="mic-container">
+                <div class="circle">
+                    <i class="fas fa-microphone"></i>
                 </div>
             </div>
+            <button type="button" id="emoji-button" class="btn btn-secondary ml-2"><i class="far fa-smile"></i></button>    
+            <button type="submit" name="submit" class="btn btn-success ml-2" id="send-message" {{ $disable }}><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+        </form>
+    </div>
+</div>
+
 
         </div>
 
@@ -1124,6 +1131,28 @@ function deleteMessage(messageId, messageElem) {
     });
 }
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+            const emojiButton = document.getElementById('emoji-button');
+            const messageInput = document.getElementById('message-input');
+
+            const picker = new EmojiButton();
+
+            picker.on('emoji', emoji => {
+                messageInput.value += emoji;
+            });
+
+            // Manually open and close the emoji picker
+            emojiButton.addEventListener('click', () => {
+                if (picker.pickerVisible) {
+                    picker.hidePicker();
+                } else {
+                    picker.showPicker(emojiButton);
+                }
+            });
+        });
+</script>
+
 
 
 </body>

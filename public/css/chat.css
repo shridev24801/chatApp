@@ -28,7 +28,7 @@ i.fas.fa-check-double.seen {
   position: relative;
 }
 
-.target_send button {
+.target_send #send-message {
   position: absolute;
   top: 34px;
   right: 40px;
@@ -233,3 +233,10 @@ border-radius:7px 7px 7px 7px ;
   display: none;
 }
 
+/* Ensure the emoji picker container is above other elements */
+#emoji-picker-container {
+  position: absolute;
+  top: 34px;
+  right: 120px; /* Adjust the positioning as needed */
+  z-index: 2; /* Ensure it's above other elements */
+}
