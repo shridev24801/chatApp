@@ -243,6 +243,7 @@
                         <div class="delete-icon hidden text-white cursor-pointer">
                             <i class="fas fa-trash"></i>
                         </div>
+                    
                     </div>
                 </div>
                 @endif
