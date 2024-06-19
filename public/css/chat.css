@@ -24,7 +24,7 @@ i.fas.fa-check-double.seen {
   background: white;
 }
 
-.target_send {
+/* .target_send {
   position: relative;
 }
 
@@ -32,7 +32,7 @@ i.fas.fa-check-double.seen {
   position: absolute;
   top: 34px;
   right: 40px;
-}
+} */
 
 .chat_item .notify {
   display: flex;
@@ -85,7 +85,7 @@ i.fas.fa-check-double.seen {
 
 /* end */
 
-.attachments {
+/* .attachments {
   opacity: 0;
 }
 
@@ -107,7 +107,7 @@ label.attachment input {
   top: 10px;
   left: 0;
   opacity: 0;
-}
+} */
 
 .profile_img {
   width: 17%;
@@ -120,28 +120,26 @@ label.attachment input {
   border-radius: 100%;
 }
 
-.mic-container {
+/* .mic-container {
   position: absolute;
   right: 9em;
   top: 33px;
-}
+} */
 
 .circle {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: #ffffff;
+  
+  background:rgba(16, 185, 129, 1);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1;
-  transition: .5s;
-  box-shadow: 0 6px 10px 0 rgba(0, 0, 0, .14), 0 1px 18px 0 rgba(0, 0, 0, .12), 0 3px 5px -1px rgba(0, 0, 0, .2);
+ 
 }
 
 .circle i {
-  color: #b2b1b1;
-  font-size: 23px;
+  color: white;
+  font-size: 18px;
   transition: .9s;
 }
 
@@ -149,16 +147,16 @@ label.attachment input {
   content: "\f130";
 }
 
-.circle.active {
+.circle.heartbeat {
   background: #ff0000;
 }
 
-.circle.active:before {
+.circle.heartbeat:before {
   background: gray;
   animation: bounce .8s ease-in-out infinite .5s;
 }
 
-.circle.active i {
+.circle.heartbeat i {
   color: #ffffff;
 }
 @-webkit-keyframes bounce {
@@ -207,10 +205,10 @@ border-radius:7px 7px 7px 7px ;
 
 
 
-.mic-container .circle.heartbeat {
+/* .mic-container .circle.heartbeat {
   animation: heartbeat 1s infinite;
   background: #ff0000;
-}
+} */
 
 @keyframes heartbeat {
   0%, 100% {
@@ -234,9 +232,9 @@ border-radius:7px 7px 7px 7px ;
 }
 
 /* Ensure the emoji picker container is above other elements */
-#emoji-picker-container {
+/* #emoji-picker-container {
   position: absolute;
   top: 34px;
-  right: 120px; /* Adjust the positioning as needed */
-  z-index: 2; /* Ensure it's above other elements */
-}
+  right: 120px; 
+  z-index: 2; 
+} */

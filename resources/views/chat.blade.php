@@ -11,13 +11,13 @@
     <link href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="{{URL::to('/css/chat.css')}}" rel="stylesheet" />
-    <link rel="stylesheet" href="https://unpkg.com/emoji-button/dist/emoji-button.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/emoji-button/dist/emoji-button.css" />
     <script src="https://unpkg.com/emoji-button"></script>
 
 
 
 
-    
+
 
 </head>
 
@@ -50,11 +50,11 @@
                                 <a href="{{ URL::to($url) }}" class="text-white">{{ $chatlist->name }}</a>
                             </p>
                             @if(isset($message) && !empty($message) )
-                                <p class="text-white latest_msg">{{$message}}</p>
+                            <p class="text-white latest_msg">{{$message}}</p>
                             @else
-                                <p class="text-white latest_msg">Has Shared a File</p>
+                            <p class="text-white latest_msg">Has Shared a File</p>
                             @endif
-                            
+
                         </div>
                         <div class="chat_item" data-chat="{{$chatlist->id}}">
                             <p class="text-gray-400">{{$time}}</p>
@@ -105,11 +105,11 @@
                 $yesterdayDate = \Carbon\Carbon::yesterday()->format('Y-m-d');
                 $lastDate = null;
                 @endphp
-                @foreach($allMessages as $message)
+                @foreach($allMessages as $index => $message)
                 @php
                 $messageDate = \Carbon\Carbon::parse($message->created_at)->format('Y-m-d');
                 $displayDate = '';
-
+                $isLastMessage = ($index === count($allMessages) - 1);
                 if ($messageDate == $currentDate) {
                 $displayDate = 'Today';
                 } elseif ($messageDate == $yesterdayDate) {
@@ -125,7 +125,7 @@
                 @endif
                 @if($message->sender == auth()->user()->id)
                 @if(!empty($message->message))
-                <div class="flex items-start mb-4 justify-end message" data-message-id="{{ $message->id }}">
+                <div class="flex items-start mb-4 justify-end message" data-message-id="{{ $message->id }}" @if($isLastMessage) id="latest-message" @endif>
                     <div class="inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
                         <p class="whitespace-nowrap">{{ $message->message }}</p>
                         <div class="tick-mark">
@@ -137,16 +137,18 @@
                         </div>
                         <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                     </div>
-                    <div class="w-10 h-10 rounded-full ml-3 profile_img">
-                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{auth()->user()->name}}">
+                    <div class="w-10 h-10 rounded-full ml-3 overflow-hidden ">
+                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
                     </div>
-                    <div class="delete-icon hidden absolute right-0 top-0 mr-2 mt-2">
-                        <i class="fas fa-trash text-white cursor-pointer"></i>
+                    <div class="absolute right-0 bottom-0 mr-2 mb-2">
+                        <div class="delete-icon hidden text-white cursor-pointer">
+                            <i class="fas fa-trash"></i>
+                        </div>
                     </div>
                 </div>
                 @else
                 @if(str_contains($message->attachment, 'chatimage') )
-                <div class="flex items-start mb-4 justify-end message" data-message-id="{{ $message->id }}">
+                <div class="flex items-start mb-4 justify-end message" data-message-id="{{ $message->id }}" @if($isLastMessage) id="latest-message" @endif>
                     <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
                         <img src="{{ asset('storage/' . $message->attachment) }}" alt="chatImage" width="100px" height="100px">
 
@@ -159,15 +161,17 @@
                         </div>
                         <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                     </div>
-                    <div class="w-10 h-10 rounded-full ml-3 profile_img">
-                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{auth()->user()->name}}">
+                    <div class="w-10 h-10 rounded-full ml-3 overflow-hidden ">
+                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
                     </div>
-                    <div class="delete-icon hidden absolute right-0 top-0 mr-2 mt-2">
-                        <i class="fas fa-trash text-white cursor-pointer"></i>
+                    <div class="absolute right-0 bottom-0 mr-2 mb-2">
+                        <div class="delete-icon hidden text-white cursor-pointer">
+                            <i class="fas fa-trash"></i>
+                        </div>
                     </div>
                 </div>
                 @elseif(str_contains($message->attachment, 'chatvideo'))
-                <div class="flex items-start mb-4 justify-end message" data-message-id="{{ $message->id }}">
+                <div class="flex items-start mb-4 justify-end message" data-message-id="{{ $message->id }}" @if($isLastMessage) id="latest-message" @endif>
                     <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
                         <video width="320" height="240" controls>
                             <source src="{{ asset('storage/' . $message->attachment) }}" type="video/mp4">
@@ -183,15 +187,17 @@
                         </div>
                         <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                     </div>
-                    <div class="w-10 h-10 rounded-full ml-3 profile_img">
-                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{auth()->user()->name}}">
+                    <div class="w-10 h-10 rounded-full ml-3 overflow-hidden ">
+                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
                     </div>
-                    <div class="delete-icon hidden absolute right-0 top-0 mr-2 mt-2">
-                        <i class="fas fa-trash text-white cursor-pointer"></i>
+                    <div class="absolute right-0 bottom-0 mr-2 mb-2">
+                        <div class="delete-icon hidden text-white cursor-pointer">
+                            <i class="fas fa-trash"></i>
+                        </div>
                     </div>
                 </div>
                 @elseif(str_contains($message->attachment, 'chataudio'))
-                <div class="flex items-start mb-4 justify-end message" data-message-id="{{ $message->id }}">
+                <div class="flex items-start mb-4 justify-end message" data-message-id="{{ $message->id }}" @if($isLastMessage) id="latest-message" @endif>
                     <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
                         <audio controls>
                             <source src="{{ asset('storage/' . $message->attachment) }}" type="audio/mpeg"> <!-- Change file extension to .mp3 -->
@@ -206,15 +212,17 @@
                         </div>
                         <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                     </div>
-                    <div class="w-10 h-10 rounded-full ml-3 profile_img">
-                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{auth()->user()->name}}">
+                    <div class="w-10 h-10 rounded-full ml-3 overflow-hidden ">
+                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
                     </div>
-                    <div class="delete-icon hidden absolute right-0 top-0 mr-2 mt-2">
-                        <i class="fas fa-trash text-white cursor-pointer"></i>
+                    <div class="absolute right-0 bottom-0 mr-2 mb-2">
+                        <div class="delete-icon hidden text-white cursor-pointer">
+                            <i class="fas fa-trash"></i>
+                        </div>
                     </div>
                 </div>
                 @else
-                <div class="flex items-start mb-4 justify-end message" data-message-id="{{ $message->id }}">
+                <div class="flex items-start mb-4 justify-end message" data-message-id="{{ $message->id }}" @if($isLastMessage) id="latest-message" @endif>
                     <?php $fileName = "ChatFiles"; ?>
                     <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
                         <a href="{{ asset('storage/' . $message->attachment) }}" download="${fileName}" class="text-white underline">{{$fileName}}</a>
@@ -228,11 +236,13 @@
                         </div>
                         <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                     </div>
-                    <div class="w-10 h-10 rounded-full ml-3 profile_img">
-                        <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{auth()->user()->name}}">
+                    <div class="w-10 h-10 rounded-full ml-3 overflow-hidden ">
+                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
                     </div>
-                    <div class="delete-icon hidden absolute right-0 top-0 mr-2 mt-2">
-                        <i class="fas fa-trash text-white cursor-pointer"></i>
+                    <div class="absolute right-0 bottom-0 mr-2 mb-2">
+                        <div class="delete-icon hidden text-white cursor-pointer">
+                            <i class="fas fa-trash"></i>
+                        </div>
                     </div>
                 </div>
                 @endif
@@ -240,9 +250,9 @@
                 @else
                 @if((!empty($recipient)) && isset($recipient))
                 @if(!empty($message->message))
-                <div class="flex items-start mb-4">
-                    <div class="w-10 h-10 bg-black rounded-full mr-3 profile_img">
-                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{$recipient->name}}">
+                <div class="flex items-start mb-4" @if($isLastMessage) id="latest-message" @endif>
+                    <div class="w-10 h-10 bg-black rounded-full mr-3 overflow-hidden">
+                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{$recipient->name}}" class="w-full h-full object-cover">
                     </div>
                     <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative">
                         <p class="whitespace-nowrap">{{ $message->message }}</p>
@@ -251,9 +261,9 @@
                 </div>
                 @else
                 @if(str_contains($message->attachment, 'chatimage'))
-                <div class="flex items-start mb-4">
-                    <div class="w-10 h-10 bg-black rounded-full mr-3 profile_img">
-                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{$recipient->name}}">
+                <div class="flex items-start mb-4" @if($isLastMessage) id="latest-message" @endif>
+                    <div class="w-10 h-10 bg-black rounded-full mr-3 overflow-hidden ">
+                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{$recipient->name}}" class="w-full h-full object-cover">
                     </div>
                     <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative">
                         <img src="{{ asset('storage/' . $message->attachment) }}" alt="chatImage" width="100px" height="100px">
@@ -261,9 +271,9 @@
                     </div>
                 </div>
                 @elseif(str_contains($message->attachment, 'chatvideo'))
-                <div class="flex items-start mb-4">
-                    <div class="w-10 h-10 bg-black rounded-full mr-3 profile_img">
-                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{$recipient->name}}">
+                <div class="flex items-start mb-4" @if($isLastMessage) id="latest-message" @endif>
+                    <div class="w-10 h-10 bg-black rounded-full mr-3 overflow-hidden">
+                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{$recipient->name}}" class="w-full h-full object-cover">
                     </div>
                     <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative">
                         <video width="320" height="240" controls>
@@ -274,9 +284,9 @@
                     </div>
                 </div>
                 @elseif(str_contains($message->attachment, 'chataudio'))
-                <div class="flex items-start mb-4">
-                    <div class="w-10 h-10 bg-black rounded-full mr-3 profile_img">
-                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{$recipient->name}}">
+                <div class="flex items-start mb-4" @if($isLastMessage) id="latest-message" @endif>
+                    <div class="w-10 h-10 bg-black rounded-full mr-3 overflow-hidden">
+                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{$recipient->name}}" class="w-full h-full object-cover">
                     </div>
                     <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative">
                         <audio controls>
@@ -288,9 +298,9 @@
                 </div>
                 @else
                 @php $fileName = "Chatfiles"; @endphp
-                <div class="flex items-start mb-4">
-                    <div class="w-10 h-10 bg-black rounded-full mr-3 profile_img">
-                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{ $recipient->name ?? '' }}">
+                <div class="flex items-start mb-4" @if($isLastMessage) id="latest-message" @endif>
+                    <div class="w-10 h-10 bg-black rounded-full mr-3 overflow-hidden">
+                        <img src="{{ asset('storage/' . $recipient->avatar) }}" alt="{{ $recipient->name ?? '' }}" class="w-full h-full object-cover">
                     </div>
                     <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative">
                         <a href="{{ asset('storage/' . $message->attachment) }}" download="{{$fileName}}" class="text-white underline">{{$fileName}}</a>
@@ -306,30 +316,40 @@
             </div>
             <!-- Message input -->
 
+
             <div class="border-t border-gray-600 p-4 w-full target_send">
-    <div class="flex items-center border border-gray-600 rounded p-2">
-        <form id="fupForm" enctype="multipart/form-data">
-            <input type="text" placeholder="Type your message here..." class="text_message flex-grow p-2" name="message" id="message-input">
-            @if((!empty($recipient)) && isset($recipient))
-            @php $disable = ""; @endphp
-            <input type="hidden" id="recipientId" value="{{ $recipient->id }}">
-            @else
-            @php $disable = "disabled"; @endphp
-            @endif
-            <label class="attachment">
-                <i class="fas fa-image"></i>
-                <input type="file" class="form-control attachment" id="file" name="attactment" />
-            </label>
-            <div class="mic-container">
-                <div class="circle">
-                    <i class="fas fa-microphone"></i>
+                <div class="flex items-center border border-gray-600 rounded p-2">
+                    <form id="fupForm" enctype="multipart/form-data" class="w-full flex items-center">
+                        <input type="text" placeholder="Type your message here..." class="flex-grow p-2 border rounded mr-2" name="message" id="message-input">
+                        @if((!empty($recipient)) && isset($recipient))
+                        @php $disable = ""; @endphp
+                        <input type="hidden" id="recipientId" value="{{ $recipient->id }}">
+                        @else
+                        @php $disable = "disabled"; @endphp
+                        @endif
+                        <div class="flex items-center space-x-2">
+                            <label class="relative cursor-pointer flex items-center justify-center w-10 h-10 bg-green-500 text-white border rounded  m-1 ">
+                                <i class="fas fa-image"></i>
+                                <input type="file" class="form-control absolute inset-0 opacity-0 cursor-pointer" id="file" name="attachment" />
+                            </label>
+                            <div class="mic-container border rounded">
+                                
+                            <div class="circle">
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                            </div>
+                            <button type="button" id="emoji-button" class="flex items-center justify-center w-10 h-10 bg-green-500 text-white border rounded">
+                                <i class="far fa-smile"></i> 
+                            </button>
+                            <button type="submit" name="submit" class="flex items-center justify-center w-10 h-10 bg-green-500 text-white border rounded" id="send-message" {{ $disable }}>
+                                <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <button type="button" id="emoji-button" class="btn btn-secondary ml-2"><i class="far fa-smile"></i></button>    
-            <button type="submit" name="submit" class="btn btn-success ml-2" id="send-message" {{ $disable }}><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
-        </form>
-    </div>
-</div>
+
+
 
 
         </div>
@@ -351,11 +371,11 @@
                 </form>
             </div>
             <div>
-            <button id = "start" class="hidden"> Start Recording </button>
-            <button id = "stop" class="hidden"> Stop Recording </button>
-            <button id = "play" class="hidden" > Play Recorded Audio </button>
-        </div> <br> 
-        <div id = "output" class="hidden"> </div>
+                <button id="start" class="hidden"> Start Recording </button>
+                <button id="stop" class="hidden"> Stop Recording </button>
+                <button id="play" class="hidden"> Play Recorded Audio </button>
+            </div> <br>
+            <div id="output" class="hidden"> </div>
         </div>
     </div>
 
@@ -402,8 +422,9 @@
                     var url = '{{ URL::to("/storage/") }}';
                     let receiverMessage = `
                 <div class="flex items-start mb-4">
-                    <div class="w-10 h-10 bg-black rounded-full mr-3">
-                        <img src="{{ asset('storage/${image}') }}" alt="${name}">
+                        <div class="w-10 h-10 bg-black rounded-full mr-3 overflow-hidden">
+
+                        <img src="{{ asset('storage/${image}') }}" alt="${name}" class="w-full h-full object-cover">
                     </div>
                     <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
                         <p class="whitespace-nowrap">${data.message}</p>
@@ -424,8 +445,9 @@
                         showNotification("Sent you a Image");
                         receiverMessage = `
                     <div class="flex items-start mb-4">
-                        <div class="w-10 h-10 bg-black rounded-full mr-3">
-                        <img src="{{ asset('storage/${image}') }}" alt="${name}">
+                            <div class="w-10 h-10 bg-black rounded-full mr-3 overflow-hidden">
+
+                        <img src="{{ asset('storage/${image}') }}" alt="${name}" class="w-full h-full object-cover">
                         </div>
                         <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
                             <img src="${url}/${attachmentPath}" alt="chatImage" width="100px" height="100px">
@@ -436,8 +458,9 @@
                         showNotification("Sent you a Vedio");
                         receiverMessage = `
                     <div class="flex items-start mb-4">
-                        <div class="w-10 h-10 bg-black rounded-full mr-3">
-                        <img src="{{ asset('storage/${image}') }}" alt="${name}">
+                            <div class="w-10 h-10 bg-black rounded-full mr-3 overflow-hidden">
+
+                        <img src="{{ asset('storage/${image}') }}" alt="${name}" class="w-full h-full object-cover">
                         </div>
                         <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
                             <video width="320" height="240" controls>
@@ -452,8 +475,9 @@
                         var fileName = attachmentPath.split('/').pop();
                         receiverMessage = `
                     <div class="flex items-start mb-4">
-                        <div class="w-10 h-10 bg-black rounded-full mr-3">
-                        <img src="{{ asset('storage/${image}') }}" alt="${name}">
+                            <div class="w-10 h-10 bg-black rounded-full mr-3 overflow-hidden">
+
+                        <img src="{{ asset('storage/${image}') }}" alt="${name}" class="w-full h-full object-cover">
                         </div>
                         <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
                             <a href="${url}/${attachmentPath}" download="${fileName}" class="text-white underline">${fileName}</a>
@@ -465,8 +489,9 @@
                         var fileName = attachmentPath.split('/').pop();
                         receiverMessage = `
                     <div class="flex items-start mb-4">
-                        <div class="w-10 h-10 bg-black rounded-full mr-3">
-                        <img src="{{ asset('storage/${image}') }}" alt="${name}">
+                            <div class="w-10 h-10 bg-black rounded-full mr-3 overflow-hidden">
+
+                        <img src="{{ asset('storage/${image}') }}" alt="${name}" class="w-full h-full object-cover">
                         </div>
                         <div class="inline-block bg-black text-white p-2 rounded-lg mb-2 relative recevier_msg">
                         <audio controls>
@@ -503,8 +528,8 @@
             }
             var latestMsg = $('.chat_item[data-chat="' + chatId + '"]').siblings('.flex-1').find('.latest_msg');
             if (data.message && data.message.length > 0) {
-            latestMsg.text(message);
-            }else{
+                latestMsg.text(message);
+            } else {
                 latestMsg.text("Has shared a file");
             }
         });
@@ -565,7 +590,7 @@
         //                 </div>
         //                 <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
         //             </div>
-        //             <div class="w-10 h-10 rounded-full ml-3">
+        //             <div class="w-10 h-10 rounded-full ml-3 overflow-hidden">
         //             <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{auth()->user()->name ?? ""}}">
         //             </div>
         //         </div>`;
@@ -768,8 +793,8 @@
                             </div>
                             <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                         </div>
-                        <div class="w-10 h-10 rounded-full ml-3">
-                        <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{auth()->user()->name ?? ""}}">
+                        <div class="w-10 h-10 rounded-full ml-3 overflow-hidden">
+                        <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{auth()->user()->name ?? ""}}" class="w-full h-full object-cover">
                         </div>
                     </div>`;
                                 $("#chat_area").append(send);
@@ -789,8 +814,8 @@
                                     </div>
                                     <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                                 </div>
-                                <div class="w-10 h-10 rounded-full ml-3">
-                                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}">
+                                <div class="w-10 h-10 rounded-full ml-3 overflow-hidden">
+                                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}" class="w-full h-full object-cover">
                                 </div>
                             </div>`;
                                 } else if (directory === 'chatvideo') {
@@ -806,8 +831,8 @@
                                     </div>
                                     <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                                 </div>
-                                <div class="w-10 h-10 rounded-full ml-3">
-                                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}">
+                                <div class="w-10 h-10 rounded-full ml-3 overflow-hidden">
+                                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}" class="w-full h-full object-cover">
                                 </div>
                             </div>`;
                                 } else if (directory === 'chatfiles') {
@@ -821,8 +846,8 @@
                                     </div>
                                     <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                                 </div>
-                                <div class="w-10 h-10 rounded-full ml-3">
-                                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}">
+                                <div class="w-10 h-10 rounded-full ml-3 overflow-hidden">
+                                    <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}" class="w-full h-full object-cover">
                                 </div>
                             </div>`;
                                 }
@@ -941,7 +966,7 @@
                             </div>
                             <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                         </div>
-                        <div class="w-10 h-10 rounded-full ml-3">
+                        <div class="w-10 h-10 rounded-full ml-3 overflow-hidden">
                             <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}">
                         </div>
                     </div>`;
@@ -964,108 +989,108 @@
         });
     </script> -->
     <script>
-    const startButton = document.getElementById('start');
-    const stopButton = document.getElementById('stop');
-    const playButton = document.getElementById('play');
-    let output = document.getElementById('output');
-    let audioRecorder;
-    let audioChunks = [];
-    let isRecording = false; // Flag to track recording status
+        const startButton = document.getElementById('start');
+        const stopButton = document.getElementById('stop');
+        const playButton = document.getElementById('play');
+        let output = document.getElementById('output');
+        let audioRecorder;
+        let audioChunks = [];
+        let isRecording = false; // Flag to track recording status
 
-    navigator.mediaDevices.getUserMedia({
-            audio: true
-        })
-        .then(stream => {
-            audioRecorder = new MediaRecorder(stream);
+        navigator.mediaDevices.getUserMedia({
+                audio: true
+            })
+            .then(stream => {
+                audioRecorder = new MediaRecorder(stream);
 
-            audioRecorder.addEventListener('dataavailable', e => {
-                audioChunks.push(e.data);
-                console.log('Data available:', e.data);
+                audioRecorder.addEventListener('dataavailable', e => {
+                    audioChunks.push(e.data);
+                    console.log('Data available:', e.data);
+                });
+
+                audioRecorder.addEventListener('stop', () => {
+                    console.log('Recording stopped. Audio chunks:', audioChunks);
+                    const blobObj = new Blob(audioChunks, {
+                        type: 'audio/mpeg'
+                    });
+                    console.log('Audio Blob:', blobObj);
+                    console.log('Audio Blob Size:', blobObj.size);
+                    const audioUrl = URL.createObjectURL(blobObj);
+                    console.log('Audio URL:', audioUrl);
+                    sendAudioToServer(blobObj);
+                    micContainer.querySelector('.circle').classList.remove('heartbeat');
+                });
+
+                startButton.addEventListener('click', startRecording);
+                stopButton.addEventListener('click', stopRecording);
+                playButton.addEventListener('click', playRecording);
+
+                // Add event listener to mic-container
+                const micContainer = document.querySelector('.mic-container');
+                micContainer.addEventListener('click', toggleRecording);
+            })
+            .catch(err => {
+                console.log('Error:', err);
             });
 
-            audioRecorder.addEventListener('stop', () => {
-                console.log('Recording stopped. Audio chunks:', audioChunks);
+        function startRecording() {
+            audioChunks = [];
+            audioRecorder.start();
+            output.innerHTML = 'Recording started! Speak now.';
+            console.log('Recording started');
+            document.querySelector('.mic-container .circle').classList.add('heartbeat');
+        }
+
+        function stopRecording() {
+            audioRecorder.stop();
+            output.innerHTML = 'Recording stopped! Click on the play button to play the recorded audio.';
+            console.log('Recording stopped');
+            document.querySelector('.mic-container .circle').classList.remove('heartbeat');
+        }
+
+        function playRecording() {
+            if (audioChunks.length > 0) {
                 const blobObj = new Blob(audioChunks, {
                     type: 'audio/mpeg'
                 });
-                console.log('Audio Blob:', blobObj);
-                console.log('Audio Blob Size:', blobObj.size);
                 const audioUrl = URL.createObjectURL(blobObj);
-                console.log('Audio URL:', audioUrl);
-                sendAudioToServer(blobObj);
-                micContainer.querySelector('.circle').classList.remove('heartbeat');
-            });
-
-            startButton.addEventListener('click', startRecording);
-            stopButton.addEventListener('click', stopRecording);
-            playButton.addEventListener('click', playRecording);
-
-            // Add event listener to mic-container
-            const micContainer = document.querySelector('.mic-container');
-            micContainer.addEventListener('click', toggleRecording);
-        })
-        .catch(err => {
-            console.log('Error:', err);
-        });
-
-    function startRecording() {
-        audioChunks = [];
-        audioRecorder.start();
-        output.innerHTML = 'Recording started! Speak now.';
-        console.log('Recording started');
-        document.querySelector('.mic-container .circle').classList.add('heartbeat');
-    }
-
-    function stopRecording() {
-        audioRecorder.stop();
-        output.innerHTML = 'Recording stopped! Click on the play button to play the recorded audio.';
-        console.log('Recording stopped');
-        document.querySelector('.mic-container .circle').classList.remove('heartbeat');
-    }
-
-    function playRecording() {
-        if (audioChunks.length > 0) {
-            const blobObj = new Blob(audioChunks, {
-                type: 'audio/mpeg'
-            });
-            const audioUrl = URL.createObjectURL(blobObj);
-            const audio = new Audio(audioUrl);
-            audio.play();
-            output.innerHTML = 'Playing the recorded audio!';
-            console.log('Playing audio:', audioUrl);
-        } else {
-            output.innerHTML = 'No audio recorded to play.';
-            console.log('No audio recorded to play');
+                const audio = new Audio(audioUrl);
+                audio.play();
+                output.innerHTML = 'Playing the recorded audio!';
+                console.log('Playing audio:', audioUrl);
+            } else {
+                output.innerHTML = 'No audio recorded to play.';
+                console.log('No audio recorded to play');
+            }
         }
-    }
 
-    function toggleRecording() {
-        if (isRecording) {
-            stopRecording();
-        } else {
-            startRecording();
+        function toggleRecording() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+            isRecording = !isRecording; // Toggle recording status
         }
-        isRecording = !isRecording; // Toggle recording status
-    }
 
-    function sendAudioToServer(blob) {
-        const formData = new FormData();
-        formData.append('audio', blob, 'recording.mp3'); // Change file name to .mp3
+        function sendAudioToServer(blob) {
+            const formData = new FormData();
+            formData.append('audio', blob, 'recording.mp3'); // Change file name to .mp3
 
-        $.ajax({
-            type: 'POST',
-            url: '{{ route("send.message", !empty($recipient) ? $recipient->id : "") }}',
-            data: formData,
-            dataType: 'json',
-            contentType: false,
-            cache: false,
-            processData: false,
-            success: function(result) {
-                console.log('Server response:', result);
-                if (result.attachment) {
-                    const url = '{{ URL::to("/storage") }}';
-                    const attachmentPath = result.attachment;
-                    const sendAttachment = `
+            $.ajax({
+                type: 'POST',
+                url: '{{ route("send.message", !empty($recipient) ? $recipient->id : "") }}',
+                data: formData,
+                dataType: 'json',
+                contentType: false,
+                cache: false,
+                processData: false,
+                success: function(result) {
+                    console.log('Server response:', result);
+                    if (result.attachment) {
+                        const url = '{{ URL::to("/storage") }}';
+                        const attachmentPath = result.attachment;
+                        const sendAttachment = `
                     <div class="flex items-start mb-4 justify-end">
                         <div class="sentMessage inline-block bg-blue-500 text-white p-2 rounded-lg mb-2 relative send_msg">
                             <audio controls>
@@ -1078,61 +1103,61 @@
                             </div>
                             <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-blue-500"></div>
                         </div>
-                        <div class="w-10 h-10 rounded-full ml-3">
+                        <div class="w-10 h-10 rounded-full ml-3 overflow-hidden">
                             <img src="{{ asset('storage/' . auth()->user()->avatar ?? "") }}" alt="{{ auth()->user()->name ?? "" }}">
                         </div>
                     </div>`;
-                    $("#chat_area").append(sendAttachment);
+                        $("#chat_area").append(sendAttachment);
+                    }
+                    if (result.active_status == 1) {
+                        changeread("delivered");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Server error:', error);
                 }
-                if (result.active_status == 1) {
-                    changeread("delivered");
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Server error:', error);
-            }
-        });
-    }
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.message').forEach(messageElem => {
-        const deleteIcon = messageElem.querySelector('.delete-icon');
-
-        deleteIcon.addEventListener('click', function() {
-            const messageId = messageElem.getAttribute('data-message-id');
-            if (confirm('Are you sure you want to delete this message?')) {
-                deleteMessage(messageId, messageElem);
-            }
-        });
-    });
-});
-
-function deleteMessage(messageId, messageElem) {
-    const csrfToken = $('meta[name="csrf-token"]').attr('content');
-
-    $.ajax({
-        url: `/delete-message/${messageId}`,
-        type: 'post',
-        headers: {
-            'X-CSRF-TOKEN': csrfToken
-        },
-        success: function(response) {
-            if (response.success) {
-                messageElem.remove();
-                console.log('Message deleted successfully');
-            } else {
-                console.error('Failed to delete message');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error:', error);
+            });
         }
-    });
-}
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.message').forEach(messageElem => {
+                const deleteIcon = messageElem.querySelector('.delete-icon');
+
+                deleteIcon.addEventListener('click', function() {
+                    const messageId = messageElem.getAttribute('data-message-id');
+                    if (confirm('Are you sure you want to delete this message?')) {
+                        deleteMessage(messageId, messageElem);
+                    }
+                });
+            });
+        });
+
+        function deleteMessage(messageId, messageElem) {
+            const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+            $.ajax({
+                url: `/delete-message/${messageId}`,
+                type: 'post',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                success: function(response) {
+                    if (response.success) {
+                        messageElem.remove();
+                        console.log('Message deleted successfully');
+                    } else {
+                        console.error('Failed to delete message');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
             const emojiButton = document.getElementById('emoji-button');
             const messageInput = document.getElementById('message-input');
 
@@ -1151,8 +1176,16 @@ function deleteMessage(messageId, messageElem) {
                 }
             });
         });
-</script>
+    </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var latestMessage = document.getElementById('latest-message');
+    if (latestMessage) {
+        latestMessage.scrollIntoView({ behavior: 'smooth' });
+    }
+});
+</script>
 
 
 </body>
